@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const argon2 = require('argon2');
+const crypto = require('crypto');
 const validator = require('validator');
 
 const adminSchema = new mongoose.Schema({
@@ -11,8 +11,21 @@ const adminSchema = new mongoose.Schema({
   password: {
     type: String,
     required: true
+  },
+  salt: {
+    type: String,
+    required: true
   }
 });
+
+// Utility functions for password hashing
+function generateSalt() {
+  return crypto.randomBytes(16).toString('hex');
+}
+
+function hashPassword(password, salt) {
+  return crypto.pbkdf2Sync(password, salt, 10000, 64, 'sha512').toString('hex');
+}
 
 // Static signup method
 adminSchema.statics.signup = async function(username, password) {
@@ -27,9 +40,14 @@ adminSchema.statics.signup = async function(username, password) {
     throw Error('Username already in use');
   }
 
-  const hash = await argon2.hash(password);
+  const salt = generateSalt();
+  const hash = hashPassword(password, salt);
 
-  const admin = await this.create({ username, password: hash });
+  const admin = await this.create({ 
+    username, 
+    password: hash,
+    salt: salt 
+  });
   return admin;
 };
 
@@ -45,8 +63,8 @@ adminSchema.statics.login = async function(username, password) {
     throw Error('Incorrect username');
   }
 
-  const match = await argon2.verify(admin.password, password);
-  if (!match) {
+  const hash = hashPassword(password, admin.salt);
+  if (hash !== admin.password) {
     throw Error('Incorrect password');
   }
 
