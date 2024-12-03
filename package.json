@@ -16,6 +16,7 @@
     "gopd": "^1.0.1",
     "has-property-descriptors": "^1.0.2",
     "jsonwebtoken": "^9.0.2",
+    "mongodb": "^6.10.0",
     "mongoose": "^8.8.2",
     "multer": "^1.4.5-lts.1",
     "safe-buffer": "^5.2.1",
