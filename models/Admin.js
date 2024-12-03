@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const bcrypt = require('bcrypt');
+const argon2 = require('argon2');
 const validator = require('validator');
 
 const adminSchema = new mongoose.Schema({
@@ -27,8 +27,7 @@ adminSchema.statics.signup = async function(username, password) {
     throw Error('Username already in use');
   }
 
-  const salt = await bcrypt.genSalt(10);
-  const hash = await bcrypt.hash(password, salt);
+  const hash = await argon2.hash(password);
 
   const admin = await this.create({ username, password: hash });
   return admin;
@@ -46,7 +45,7 @@ adminSchema.statics.login = async function(username, password) {
     throw Error('Incorrect username');
   }
 
-  const match = await bcrypt.compare(password, admin.password);
+  const match = await argon2.verify(admin.password, password);
   if (!match) {
     throw Error('Incorrect password');
   }

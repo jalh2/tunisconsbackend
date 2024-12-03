@@ -31,4 +31,14 @@ const signupAdmin = async (req, res) => {
   }
 };
 
-module.exports = { loginAdmin, signupAdmin };
+// Delete all admin accounts
+const deleteAllAdmins = async (req, res) => {
+  try {
+    await Admin.deleteMany({});
+    res.status(200).json({ message: 'All admin accounts deleted successfully' });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
+module.exports = { loginAdmin, signupAdmin, deleteAllAdmins };
